@@ -2,6 +2,10 @@
 
 // Test Modules
 import {expect} from            'chai';
+import {mock} from              'simple-mock';
+
+// System Modules
+import $LogProvider from         'angie-log';
 
 // Angie Injector Modules
 import {
@@ -14,15 +18,17 @@ import {
 describe('$InjectorProvider', function() {
     let set = $Injector.$specifyInjectorRoot;
 
-    afterEach(function() {
-        set();
-    });
+    beforeEach(() => { mock($LogProvider, 'error', () => false); });
+    afterEach(() => { set(); });
     describe('get', function() {
         let get = $Injector.get;
 
         it('test no dependencies to provide', function() {
             set();
             expect(get.bind(null, 'test')).to.throw($$ProviderDomainError);
+            expect(
+                $LogProvider.error.calls[0].args[0]
+            ).to.eq('No dependencies to inject');
         });
         describe('registrar', function() {
             beforeEach(function() {
@@ -32,7 +38,7 @@ describe('$InjectorProvider', function() {
                         test1: 'test',
                         $scope: 'test'
                     },
-                    $registry: {
+                    $$registry: {
                         test: 'constants',
                         test1: 'constants',
                         $scope: 'constants'
@@ -49,6 +55,9 @@ describe('$InjectorProvider', function() {
                 expect(
                     get.bind(null, 'test', 'test1', 'test2')
                 ).to.throw($$ProviderNotFoundError);
+                expect(
+                    $LogProvider.error.calls[0].args[0]
+                ).to.eq('Cannot find test2 <-- test2Provider');
             });
             it('test all arguments found', function() {
                 set({
@@ -57,7 +66,7 @@ describe('$InjectorProvider', function() {
                         test1: 'test',
                         test3: 'test'
                     },
-                    $registry: {
+                    $$registry: {
                         test: 'constants',
                         test1: 'constants',
                         test3: 'constants'
@@ -85,6 +94,9 @@ describe('$InjectorProvider', function() {
                 expect(
                     get.bind(null, 'test', 'test1', 'test2')
                 ).to.throw($$ProviderNotFoundError);
+                expect(
+                    $LogProvider.error.calls[0].args[0]
+                ).to.eq('Cannot find test1 <-- test1Provider');
             });
             it('test no registrar with many arguments', function() {
                 expect(
@@ -118,7 +130,7 @@ describe('$InjectorProvider', function() {
                     test: 'test',
                     test1: 'test'
                 },
-                $registry: {
+                $$registry: {
                     test: 'constants',
                     test1: 'constants'
                 }

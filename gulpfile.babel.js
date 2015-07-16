@@ -9,10 +9,7 @@ import istanbul from            'gulp-istanbul';
 import {Instrumenter} from      'isparta';
 import mocha from               'gulp-mocha';
 import cobertura from           'istanbul-cobertura-badger';
-import {bold, green, red} from  'chalk';
-
-const breen = (v) => bold(green(v)),
-      bread = (v) => bold(red(v));
+import $LogProvider from        'angie-log';
 
 const src = 'src/**/*.js',
       testSrc = 'test/**/*.spec.js',
@@ -48,14 +45,14 @@ gulp.task('mocha', function(cb) {
         ).pipe(
             istanbul.hookRequire()
         ).on('finish', function() {
-            breen('Running Angie Mocha test suite');
+            $LogProvider.info('Running Angie Mocha test suite');
             gulp.src(
                 [ 'test/src/testUtil.spec.js', 'test/**/!(*testUtil).spec.js' ],
                 { read: false }
             ).pipe(mocha({
                 reporter: 'spec'
             }).on('error', function(e) {
-                bread(e);
+                $LogProvider.error(e);
                 resolve();
             }).on('end', function() {
                 resolve();
@@ -74,7 +71,7 @@ gulp.task('mocha', function(cb) {
     });
 });
 gulp.task('esdoc', function(cb) {
-    breen('Generating Angie documentation');
+    $LogProvider.info('Generating Angie documentation');
     exec('esdoc -c esdoc.json', cb);
 });
 gulp.task('watch', [ 'jscs', 'mocha' ], function() {
