@@ -1,9 +1,8 @@
 'use strict'; 'use strong';
 
 // System Modules
-import {bold, red} from   'chalk';
+import $LogProvider from    'angie-log';
 
-const bread = (v) => bold(red(v));
 let $$injectorRoot;
 
 /**
@@ -37,8 +36,8 @@ class $InjectorProvider {
                 arguments[0] : Array.from(arguments);
 
         // Check to see if a registrar exists
-        if (typeof $$injectorRoot.$registry === 'object') {
-            registrar = $$injectorRoot.$registry;
+        if (typeof $$injectorRoot.$$registry === 'object') {
+            registrar = $$injectorRoot.$$registry;
         }
 
         // Check to see if there are any preceeding empty args
@@ -119,20 +118,34 @@ function $injectionBinder(fn) {
         ).split(',').map((v) => v.trim());
         providers = $InjectorProvider.get.apply(global.app, args);
     }
-    return typeof providers === 'object' ?
+    return providers instanceof Array ?
         fn.bind(null, ...providers) : providers ?
             fn.bind(null, providers) : fn.bind(null);
 }
 
+/**
+ * @desc Handles Errors for unfound injection resources based on RangeError
+ * @since 0.0.1
+ * @extends {RangeError}
+ * @access private
+ */
 class $$ProviderNotFoundError extends RangeError {
     constructor(name) {
-        super(bread(`Cannot find ${name} <-- ${name}Provider`));
+        $LogProvider.error(`Cannot find ${name} <-- ${name}Provider`);
+        super();
     }
 }
 
+/**
+ * @desc Handles Errors for empty $Injector requests based on ReferenceError
+ * @since 0.0.1
+ * @extends {ReferenceError}
+ * @access private
+ */
 class $$ProviderDomainError extends ReferenceError {
     constructor() {
-        super(bread('No dependencies to inject'));
+        $LogProvider.error('No dependencies to inject');
+        super();
     }
 }
 
